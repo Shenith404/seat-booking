@@ -19,3 +19,16 @@ RETURNING id, show_id, customer_email, customer_phone, status, created_at;
 INSERT INTO tickets (id, booking_id, show_id, seat_id, qr_code_hash)
 VALUES (gen_random_uuid(), $1, $2, $3, $4)
 RETURNING id, booking_id, show_id, seat_id, qr_code_hash, created_at;
+
+-- name: GetBookingByID :one
+SELECT id, show_id, customer_email, customer_phone, status, created_at
+FROM booking
+WHERE id = $1;
+
+-- name: GetTicketsByBookingID :many
+SELECT id, booking_id, show_id, seat_id, qr_code_hash, created_at
+FROM tickets
+WHERE booking_id = $1;
+
+-- name: UpdateTicketQRHash :exec
+UPDATE tickets SET qr_code_hash = $1 WHERE id = $2;

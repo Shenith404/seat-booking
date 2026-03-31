@@ -14,6 +14,9 @@ import (
 	"github.com/joho/godotenv"
 	httpSwagger "github.com/swaggo/http-swagger"
 
+	_ "github.com/shenith404/seat-booking/docs" // Swagger docs
+
+	"github.com/google/uuid"
 	"github.com/shenith404/seat-booking/internal/booking"
 	"github.com/shenith404/seat-booking/internal/cache"
 	"github.com/shenith404/seat-booking/internal/config"
@@ -26,7 +29,6 @@ import (
 	"github.com/shenith404/seat-booking/internal/store"
 	"github.com/shenith404/seat-booking/internal/websocket"
 	"github.com/shenith404/seat-booking/internal/worker"
-	"github.com/google/uuid"
 )
 
 // @title Seat Booking API
@@ -206,5 +208,3 @@ func main() {
 
 	log.Println("Server stopped gracefully")
 }
-
-

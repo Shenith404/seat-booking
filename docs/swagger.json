@@ -1,0 +1,41 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "Production-level seat booking system with real-time updates",
+    "title": "Seat Booking API",
+    "termsOfService": "http://swagger.io/terms/",
+    "contact": {
+      "name": "API Support",
+      "email": "support@example.com"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    },
+    "version": "1.0"
+  },
+  "host": "localhost:8080",
+  "basePath": "/api/v1",
+  "paths": {
+    "/health": {
+      "get": {
+        "description": "Check if the API is running",
+        "produces": ["application/json"],
+        "tags": ["Health"],
+        "summary": "Health check endpoint",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "securityDefinitions": {
+    "ApiKeyAuth": {
+      "type": "apiKey",
+      "name": "X-Session-ID",
+      "in": "header"
+    }
+  }
+}

@@ -1,13 +1,13 @@
 version: "2"
 sql:
   - engine: "postgresql"
-    queries: "./sqlc/queries.sql"
-    schema: "./migrations"
+    queries: "./sql/queries"
+    schema: "./sql/migrations"
     gen:
       go:
-        package: "repo"
-        out: "./sqlc"
+        package: "db"
+        out: "./internal/db"
         sql_package: "pgx/v5"
         emit_json_tags: true
-        emit_interface: true # Generate interfaces for all queries
-        emit_prepared_queries: true # Use prepared statements for better performance
+        emit_interface: true
+        emit_prepared_queries: true

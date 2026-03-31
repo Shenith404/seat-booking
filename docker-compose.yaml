@@ -99,20 +99,14 @@ services:
     container_name: sqlc_go_seat_reservation
     working_dir: /src
     volumes:
-      - ./:/src:ro
-      - sqlc_output:/src/internal/db
+      - ./:/src
     command: ["generate", "-f", "sqlc.yaml"]
     networks:
       - backend
-    profiles:
-      - tools
 
 networks:
   backend:
     driver: bridge
-    ipam:
-      config:
-        - subnet: 172.20.0.0/16
 
 volumes:
   postgres_data:
@@ -121,5 +115,3 @@ volumes:
     driver: local
   sqlc_output:
     driver: local
-
-

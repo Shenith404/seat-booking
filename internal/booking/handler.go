@@ -35,7 +35,7 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 // @Failure 409 {object} common.Response{error=common.Error}
 // @Router /api/v1/bookings [post]
 func (h *Handler) CreateBooking(w http.ResponseWriter, r *http.Request) {
-	req, appErr := common.DecodeAndValidate[CreateBookingRequest](r, func(req *CreateBookingRequest, v *common.Validator) {
+	req, appErr := common.DecodeAndValidate(r, func(req *CreateBookingRequest, v *common.Validator) {
 		v.Required(req.SessionID, "session_id")
 		v.UUID(req.SessionID, "session_id")
 		v.Required(req.ShowID, "show_id")

@@ -113,6 +113,11 @@ func (s *ServiceImpl) HoldSeat(ctx context.Context, req *HoldSeatRequest) (*Hold
 		return nil, common.NewInternalError("Failed to save session").WithCause(err)
 	}
 
+	// Extend session and all held seats (including previously held ones)
+	if err := s.extendSessionInternal(ctx, session); err != nil {
+		return nil, common.NewInternalError("Failed to extend session").WithCause(err)
+	}
+
 	// Publish event
 	if s.pubsub != nil {
 		s.pubsub.PublishSeatHeld(ctx, req.ShowID, req.SeatID)
@@ -176,6 +181,11 @@ func (s *ServiceImpl) ReleaseSeat(ctx context.Context, req *HoldSeatRequest) (*H
 		return nil, common.NewInternalError("Failed to save session").WithCause(err)
 	}
 
+	// Extend session and all remaining held seats
+	if err := s.extendSessionInternal(ctx, session); err != nil {
+		return nil, common.NewInternalError("Failed to extend session").WithCause(err)
+	}
+
 	// Publish event
 	if s.pubsub != nil {
 		s.pubsub.PublishSeatReleased(ctx, req.ShowID, req.SeatID)
@@ -207,7 +217,7 @@ func (s *ServiceImpl) GetSessionStatus(ctx context.Context, showID, sessionID st
 	return s.buildStatusResponse(session), nil
 }
 
-// ExtendSession extends the session TTL
+// ExtendSession extends the session TTL and all held seats
 func (s *ServiceImpl) ExtendSession(ctx context.Context, req *ExtendSessionRequest) (*HoldStatusResponse, *common.AppError) {
 	session, err := s.repo.GetSession(ctx, req.ShowID, req.SessionID)
 	if err != nil {
@@ -243,13 +253,48 @@ func (s *ServiceImpl) ExtendSession(ctx context.Context, req *ExtendSessionReque
 		return nil, common.NewInternalError("Failed to extend session").WithCause(err)
 	}
 
-	// Also extend seat holds
+	// Also extend all held seat TTLs
 	for _, seatID := range session.HeldSeats {
-		s.repo.HoldSeat(ctx, req.ShowID, seatID, req.SessionID, extendTTL)
+		s.repo.ExtendSeatHold(ctx, req.ShowID, seatID, req.SessionID, extendTTL)
 	}
 
 	session.LastActive = time.Now()
 	return s.buildStatusResponse(session), nil
+}
+
+// extendSessionInternal is a helper to extend session and seats (called internally)
+func (s *ServiceImpl) extendSessionInternal(ctx context.Context, session *Session) error {
+	// Check if session has exceeded max time
+	if session.IsSessionExpired() {
+		return nil // Don't extend if expired
+	}
+
+	// Calculate remaining absolute time
+	elapsed := time.Since(session.CreatedAt)
+	remaining := s.config.MaxSessionTime - elapsed
+
+	// Can only extend if there's time left
+	if remaining <= 0 {
+		return nil // Don't extend if max time reached
+	}
+
+	// Extend TTL (min of IdleTTL and remaining absolute time)
+	extendTTL := s.config.IdleTTL
+	if remaining < extendTTL {
+		extendTTL = remaining
+	}
+
+	// Extend session TTL
+	if err := s.repo.ExtendSession(ctx, session.ShowID, session.SessionID, extendTTL); err != nil {
+		return err
+	}
+
+	// Extend all held seat TTLs
+	for _, seatID := range session.HeldSeats {
+		s.repo.ExtendSeatHold(ctx, session.ShowID, seatID, session.SessionID, extendTTL)
+	}
+
+	return nil
 }
 
 // GetShowSeatsStatus returns status of all seats for a show

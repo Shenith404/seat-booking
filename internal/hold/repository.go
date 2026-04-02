@@ -19,6 +19,7 @@ type Repository interface {
 
 	// Seat hold operations
 	HoldSeat(ctx context.Context, showID, seatID, sessionID string, ttl time.Duration) (bool, error)
+	ExtendSeatHold(ctx context.Context, showID, seatID, sessionID string, ttl time.Duration) error
 	ReleaseSeat(ctx context.Context, showID, seatID, sessionID string) error
 	GetSeatHolder(ctx context.Context, showID, seatID string) (string, error)
 	GetHeldSeats(ctx context.Context, showID string) (map[string]string, error)
@@ -94,22 +95,49 @@ func (r *RedisRepository) ExtendSession(ctx context.Context, showID, sessionID s
 	return r.client.Expire(ctx, key, ttl).Err()
 }
 
-// HoldSeat attempts to hold a seat for a session using SETNX
+// HoldSeat attempts to hold a seat for a session using SET with NX option
 func (r *RedisRepository) HoldSeat(ctx context.Context, showID, seatID, sessionID string, ttl time.Duration) (bool, error) {
 	key := seatHoldKey(showID, seatID)
 
-	// Use SETNX to atomically set if not exists
-	success, err := r.client.SetNX(ctx, key, sessionID, ttl).Result()
+	// Use SET with NX option to atomically set if not exists (redis v9 uses SetArgs)
+	success, err := r.client.SetArgs(ctx, key, sessionID, redis.SetArgs{
+		Mode: "NX",
+		TTL:  ttl,
+	}).Result()
+	if err == redis.Nil {
+		return false, nil
+	}
 	if err != nil {
 		return false, fmt.Errorf("failed to hold seat: %w", err)
 	}
 
-	if success {
+	if success == "OK" {
 		// Add to show's held seats set
 		r.client.SAdd(ctx, showSeatsKey(showID), seatID)
+		return true, nil
 	}
 
-	return success, nil
+	return false, nil
+}
+
+// ExtendSeatHold extends the TTL of an existing seat hold (only if owned by the session)
+func (r *RedisRepository) ExtendSeatHold(ctx context.Context, showID, seatID, sessionID string, ttl time.Duration) error {
+	key := seatHoldKey(showID, seatID)
+
+	// Use Lua script to atomically check ownership and extend TTL
+	script := redis.NewScript(`
+		if redis.call("GET", KEYS[1]) == ARGV[1] then
+			return redis.call("EXPIRE", KEYS[1], ARGV[2])
+		end
+		return 0
+	`)
+
+	_, err := script.Run(ctx, r.client, []string{key}, sessionID, int(ttl.Seconds())).Result()
+	if err != nil {
+		return fmt.Errorf("failed to extend seat hold: %w", err)
+	}
+
+	return nil
 }
 
 // ReleaseSeat releases a seat hold

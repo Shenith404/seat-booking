@@ -1,4 +1,3 @@
-basePath: /api/v1
 definitions:
   github_com_shenith404_seat-booking_internal_common.Error:
     properties:

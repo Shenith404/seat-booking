@@ -39,7 +39,7 @@ func (h *Handler) RegisterRoutes(r chi.Router) {
 // @Failure 429 {object} common.Response{error=common.Error}
 // @Router /api/v1/hold [post]
 func (h *Handler) HoldSeat(w http.ResponseWriter, r *http.Request) {
-	req, appErr := common.DecodeAndValidate[HoldSeatRequest](r, func(req *HoldSeatRequest, v *common.Validator) {
+	req, appErr := common.DecodeAndValidate(r, func(req *HoldSeatRequest, v *common.Validator) {
 		v.Required(req.SessionID, "session_id")
 		v.UUID(req.SessionID, "session_id")
 		v.Required(req.ShowID, "show_id")

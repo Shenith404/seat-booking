@@ -14,11 +14,13 @@ import (
 type Repository interface {
 	// Hall operations
 	CreateHall(ctx context.Context, hall *Hall) error
+	CreateHallWithSeats(ctx context.Context, hall *Hall, seats []Seat) error
 	GetHallByID(ctx context.Context, id uuid.UUID) (*Hall, error)
 	GetAllHalls(ctx context.Context) ([]Hall, error)
 	DeleteHall(ctx context.Context, id uuid.UUID) error
 
 	// Seat operations
+	UpdateHallWithSeats(ctx context.Context, hallID uuid.UUID, hallName string, seats []Seat) error
 	CreateSeats(ctx context.Context, seats []Seat) error
 	GetSeatsByHallID(ctx context.Context, hallID uuid.UUID) ([]Seat, error)
 	GetSeatByID(ctx context.Context, id uuid.UUID) (*Seat, error)
@@ -44,6 +46,59 @@ func (r *PostgresRepository) CreateHall(ctx context.Context, hall *Hall) error {
 		hall.TotalSeats,
 	)
 	return err
+}
+
+// CreateHallWithSeats creates a new hall with seats in a single transaction
+func (r *PostgresRepository) CreateHallWithSeats(ctx context.Context, hall *Hall, seats []Seat) error {
+	// Start transaction
+	tx, err := r.pool.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
+	// Create hall
+	_, err = tx.Exec(ctx,
+		`INSERT INTO halls (id, name, total_seats, created_at, updated_at)
+		 VALUES ($1, $2, $3, NOW(), NOW())`,
+		pgtype.UUID{Bytes: hall.ID, Valid: true},
+		hall.Name,
+		hall.TotalSeats,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create hall: %w", err)
+	}
+
+	// Create seats using batch
+	if len(seats) > 0 {
+		batch := &pgx.Batch{}
+		for _, seat := range seats {
+			batch.Queue(
+				`INSERT INTO seats (id, hall_id, row_name, seat_number, created_at, updated_at)
+				 VALUES ($1, $2, $3, $4, NOW(), NOW())`,
+				pgtype.UUID{Bytes: seat.ID, Valid: true},
+				pgtype.UUID{Bytes: seat.HallID, Valid: true},
+				seat.RowName,
+				seat.SeatNumber,
+			)
+		}
+
+		br := tx.SendBatch(ctx, batch)
+		for range seats {
+			if _, err := br.Exec(); err != nil {
+				br.Close()
+				return fmt.Errorf("failed to insert seat: %w", err)
+			}
+		}
+		br.Close()
+	}
+
+	// Commit the transaction
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	return nil
 }
 
 // GetHallByID retrieves a hall by ID
@@ -110,6 +165,64 @@ func (r *PostgresRepository) DeleteHall(ctx context.Context, id uuid.UUID) error
 		pgtype.UUID{Bytes: id, Valid: true},
 	)
 	return err
+}
+
+// UpdateSeats updates seats for a hall
+func (r *PostgresRepository) UpdateHallWithSeats(ctx context.Context, hallID uuid.UUID, hallName string, seats []Seat) error {
+	// Start a transaction
+	tx, err := r.pool.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
+	//update hall name and total seats
+	_, err = tx.Exec(ctx,
+		`UPDATE halls SET name = $1, total_seats = $2, updated_at = NOW() WHERE id = $3`,
+		hallName,
+		len(seats),
+		pgtype.UUID{Bytes: hallID, Valid: true},
+	)
+
+	// Delete existing seats for the hall
+	_, err = tx.Exec(ctx,
+		`DELETE FROM seats WHERE hall_id = $1`,
+		pgtype.UUID{Bytes: hallID, Valid: true},
+	)
+	if err != nil {
+		return fmt.Errorf("failed to delete existing seats: %w", err)
+	}
+
+	// Insert new seats using batch
+	if len(seats) > 0 {
+		batch := &pgx.Batch{}
+		for _, seat := range seats {
+			batch.Queue(
+				`INSERT INTO seats (id, hall_id, row_name, seat_number, created_at, updated_at)
+				 VALUES ($1, $2, $3, $4, NOW(), NOW())`,
+				pgtype.UUID{Bytes: seat.ID, Valid: true},
+				pgtype.UUID{Bytes: seat.HallID, Valid: true},
+				seat.RowName,
+				seat.SeatNumber,
+			)
+		}
+
+		br := tx.SendBatch(ctx, batch)
+		for range seats {
+			if _, err := br.Exec(); err != nil {
+				br.Close()
+				return fmt.Errorf("failed to insert seat: %w", err)
+			}
+		}
+		br.Close()
+	}
+
+	// Commit the transaction
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	return nil
 }
 
 // CreateSeats creates multiple seats

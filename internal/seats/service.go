@@ -14,6 +14,7 @@ type Service interface {
 	GetHallByID(ctx context.Context, id string) (*HallResponse, *common.AppError)
 	GetAllHalls(ctx context.Context) ([]HallResponse, *common.AppError)
 	DeleteHall(ctx context.Context, id string) *common.AppError
+	UpdateHallWithSeats(ctx context.Context, id string, req *UpdateHallRequest) *common.AppError
 
 	// Seat operations
 	GetSeatsByHallID(ctx context.Context, hallID string) ([]SeatResponse, *common.AppError)
@@ -45,11 +46,6 @@ func (s *ServiceImpl) CreateHall(ctx context.Context, req *CreateHallRequest) (*
 		TotalSeats: totalSeats,
 	}
 
-	// Create hall
-	if err := s.repo.CreateHall(ctx, hall); err != nil {
-		return nil, common.NewInternalError("Failed to create hall").WithCause(err)
-	}
-
 	// Create seats
 	var seats []Seat
 	for _, row := range req.SeatLayout {
@@ -63,10 +59,9 @@ func (s *ServiceImpl) CreateHall(ctx context.Context, req *CreateHallRequest) (*
 		}
 	}
 
-	if len(seats) > 0 {
-		if err := s.repo.CreateSeats(ctx, seats); err != nil {
-			return nil, common.NewInternalError("Failed to create seats").WithCause(err)
-		}
+	// Create hall with seats in a single transaction
+	if err := s.repo.CreateHallWithSeats(ctx, hall, seats); err != nil {
+		return nil, common.NewInternalError("Failed to create hall with seats").WithCause(err)
 	}
 
 	// Build response
@@ -77,6 +72,32 @@ func (s *ServiceImpl) CreateHall(ctx context.Context, req *CreateHallRequest) (*
 	}
 
 	return response, nil
+}
+
+func (s *ServiceImpl) UpdateHallWithSeats(ctx context.Context, id string, req *UpdateHallRequest) *common.AppError {
+	hallID, err := uuid.Parse(id)
+	if err != nil {
+		return common.NewBadRequestError("Invalid hall ID")
+	}
+	// Create seats
+	var seats []Seat
+	for _, row := range req.SeatLayout {
+		for i := 1; i <= row.SeatCount; i++ {
+			seats = append(seats, Seat{
+				ID:         uuid.New(),
+				HallID:     hallID,
+				RowName:    row.RowName,
+				SeatNumber: i,
+			})
+		}
+	}
+	err = s.repo.UpdateHallWithSeats(ctx, hallID, req.Name, seats)
+	if err != nil {
+		return common.NewInternalError("Failed to update hall with seats").WithCause(err)
+	}
+
+	return nil
+
 }
 
 // GetHallByID retrieves a hall by ID with its seats

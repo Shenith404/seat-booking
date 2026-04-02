@@ -20,6 +20,7 @@ func NewHandler(service Service) *Handler {
 // RegisterRoutes registers seat/hall routes
 func (h *Handler) RegisterRoutes(r chi.Router) {
 	r.Post("/halls", h.CreateHall)
+	r.Put("/halls/{id}", h.UpdateHallWithSeats)
 	r.Get("/halls", h.GetAllHalls)
 	r.Get("/halls/{id}", h.GetHallByID)
 	r.Delete("/halls/{id}", h.DeleteHall)
@@ -58,6 +59,43 @@ func (h *Handler) CreateHall(w http.ResponseWriter, r *http.Request) {
 	}
 
 	common.Created(w, result)
+}
+
+// UpdateHallWithSeats godoc
+// @Summary Update a hall with seats
+// @Description Update hall name and seat layout
+// @Tags halls
+// @Accept json
+// @Produce json
+// @Param id path string true "Hall ID"
+// @Param request body UpdateHallRequest true "Update hall request"
+// @Success 204
+// @Failure 400 {object} common.Response{error=common.Error}
+// @Failure 404 {object} common.Response{error=common.Error}
+// @Router /api/v1/halls/{id} [put]
+func (h *Handler) UpdateHallWithSeats(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+
+	req, appErr := common.DecodeAndValidate(r, func(req *UpdateHallRequest, v *common.Validator) {
+		v.Required(req.Name, "name")
+		v.MaxLength(req.Name, 255, "name")
+		v.Check(len(req.SeatLayout) > 0, "seat_layout", "At least one row is required")
+		for i, row := range req.SeatLayout {
+			v.Check(row.RowName != "", "seat_layout", "Row name is required for row "+string(rune('1'+i)))
+			v.Check(row.SeatCount > 0, "seat_layout", "Seat count must be positive for row "+row.RowName)
+		}
+	})
+	if appErr != nil {
+		common.Err(w, appErr)
+		return
+	}
+
+	if appErr := h.service.UpdateHallWithSeats(r.Context(), id, req); appErr != nil {
+		common.Err(w, appErr)
+		return
+	}
+
+	common.NoContent(w)
 }
 
 // GetAllHalls godoc

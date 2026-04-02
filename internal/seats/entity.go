@@ -31,6 +31,11 @@ type CreateHallRequest struct {
 	SeatLayout []SeatLayoutRow `json:"seat_layout"`
 }
 
+type UpdateHallRequest struct {
+	Name       string          `json:"name"`
+	SeatLayout []SeatLayoutRow `json:"seat_layout"`
+}
+
 // SeatLayoutRow represents a row of seats
 type SeatLayoutRow struct {
 	RowName   string `json:"row_name"`

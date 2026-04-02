@@ -15,7 +15,10 @@ type Querier interface {
 	CheckSeatsAvailableForUpdate(ctx context.Context, arg CheckSeatsAvailableForUpdateParams) ([]pgtype.UUID, error)
 	CreateBooking(ctx context.Context, arg CreateBookingParams) (Booking, error)
 	CreateTicket(ctx context.Context, arg CreateTicketParams) (Ticket, error)
+	GetBookingByID(ctx context.Context, id pgtype.UUID) (Booking, error)
 	GetShowSeats(ctx context.Context, id pgtype.UUID) ([]GetShowSeatsRow, error)
+	GetTicketsByBookingID(ctx context.Context, bookingID pgtype.UUID) ([]Ticket, error)
+	UpdateTicketQRHash(ctx context.Context, arg UpdateTicketQRHashParams) error
 }
 
 var _ Querier = (*Queries)(nil)

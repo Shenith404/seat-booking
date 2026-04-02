@@ -102,6 +102,26 @@ func (q *Queries) CreateTicket(ctx context.Context, arg CreateTicketParams) (Tic
 	return i, err
 }
 
+const getBookingByID = `-- name: GetBookingByID :one
+SELECT id, show_id, customer_email, customer_phone, status, created_at
+FROM booking
+WHERE id = $1
+`
+
+func (q *Queries) GetBookingByID(ctx context.Context, id pgtype.UUID) (Booking, error) {
+	row := q.db.QueryRow(ctx, getBookingByID, id)
+	var i Booking
+	err := row.Scan(
+		&i.ID,
+		&i.ShowID,
+		&i.CustomerEmail,
+		&i.CustomerPhone,
+		&i.Status,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const getShowSeats = `-- name: GetShowSeats :many
 SELECT s.id, s.hall_id, s.row_name, s.seat_number 
 FROM seats s
@@ -138,4 +158,51 @@ func (q *Queries) GetShowSeats(ctx context.Context, id pgtype.UUID) ([]GetShowSe
 		return nil, err
 	}
 	return items, nil
+}
+
+const getTicketsByBookingID = `-- name: GetTicketsByBookingID :many
+SELECT id, booking_id, show_id, seat_id, qr_code_hash, created_at
+FROM tickets
+WHERE booking_id = $1
+`
+
+func (q *Queries) GetTicketsByBookingID(ctx context.Context, bookingID pgtype.UUID) ([]Ticket, error) {
+	rows, err := q.db.Query(ctx, getTicketsByBookingID, bookingID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Ticket
+	for rows.Next() {
+		var i Ticket
+		if err := rows.Scan(
+			&i.ID,
+			&i.BookingID,
+			&i.ShowID,
+			&i.SeatID,
+			&i.QrCodeHash,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const updateTicketQRHash = `-- name: UpdateTicketQRHash :exec
+UPDATE tickets SET qr_code_hash = $1 WHERE id = $2
+`
+
+type UpdateTicketQRHashParams struct {
+	QrCodeHash string      `json:"qr_code_hash"`
+	ID         pgtype.UUID `json:"id"`
+}
+
+func (q *Queries) UpdateTicketQRHash(ctx context.Context, arg UpdateTicketQRHashParams) error {
+	_, err := q.db.Exec(ctx, updateTicketQRHash, arg.QrCodeHash, arg.ID)
+	return err
 }

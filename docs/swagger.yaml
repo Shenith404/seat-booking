@@ -1,0 +1,1124 @@
+basePath: /api/v1
+definitions:
+  github_com_shenith404_seat-booking_internal_common.Error:
+    properties:
+      code:
+        $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.ErrorCode'
+      details: {}
+      message:
+        type: string
+    type: object
+  github_com_shenith404_seat-booking_internal_common.ErrorCode:
+    enum:
+    - INTERNAL_ERROR
+    - BAD_REQUEST
+    - NOT_FOUND
+    - UNAUTHORIZED
+    - FORBIDDEN
+    - CONFLICT
+    - VALIDATION_ERROR
+    - HOLD_SESSION_EXPIRED
+    - HOLD_SESSION_MAX_TIME_EXCEEDED
+    - HOLD_TOGGLE_LIMIT_EXCEEDED
+    - HOLD_SEAT_UNAVAILABLE
+    - HOLD_SEAT_NOT_HELD
+    - BOOKING_SEATS_NOT_HELD
+    - BOOKING_SEATS_ALREADY_BOOKED
+    - BOOKING_FAILED
+    - RATE_LIMIT_EXCEEDED
+    type: string
+    x-enum-varnames:
+    - ErrCodeInternal
+    - ErrCodeBadRequest
+    - ErrCodeNotFound
+    - ErrCodeUnauthorized
+    - ErrCodeForbidden
+    - ErrCodeConflict
+    - ErrCodeValidation
+    - ErrCodeHoldSessionExpired
+    - ErrCodeHoldSessionMaxTime
+    - ErrCodeHoldToggleLimitHit
+    - ErrCodeHoldSeatUnavailable
+    - ErrCodeHoldSeatNotHeld
+    - ErrCodeBookingSeatsNotHeld
+    - ErrCodeBookingSeatsTaken
+    - ErrCodeBookingFailed
+    - ErrCodeRateLimitExceeded
+  github_com_shenith404_seat-booking_internal_common.Meta:
+    properties:
+      page:
+        type: integer
+      per_page:
+        type: integer
+      total:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
+  github_com_shenith404_seat-booking_internal_common.Response:
+    properties:
+      data: {}
+      error:
+        $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Error'
+      meta:
+        $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Meta'
+      success:
+        type: boolean
+    type: object
+  internal_booking.BookingResponse:
+    properties:
+      created_at:
+        type: string
+      customer_email:
+        type: string
+      customer_phone:
+        type: string
+      id:
+        type: string
+      show_id:
+        type: string
+      status:
+        type: string
+      tickets:
+        items:
+          $ref: '#/definitions/internal_booking.TicketResponse'
+        type: array
+    type: object
+  internal_booking.CreateBookingRequest:
+    properties:
+      customer_email:
+        type: string
+      customer_phone:
+        type: string
+      session_id:
+        type: string
+      show_id:
+        type: string
+    type: object
+  internal_booking.TicketResponse:
+    properties:
+      id:
+        type: string
+      seat_id:
+        type: string
+      seat_info:
+        type: string
+    type: object
+  internal_hold.ExtendSessionRequest:
+    properties:
+      session_id:
+        type: string
+      show_id:
+        type: string
+    type: object
+  internal_hold.HoldSeatRequest:
+    properties:
+      seat_id:
+        type: string
+      session_id:
+        type: string
+      show_id:
+        type: string
+    type: object
+  internal_hold.HoldStatusResponse:
+    properties:
+      can_extend:
+        type: boolean
+      held_seats:
+        items:
+          type: string
+        type: array
+      max_time_seconds:
+        type: integer
+      remaining_time_seconds:
+        type: integer
+      session_id:
+        type: string
+      show_id:
+        type: string
+      toggle_count:
+        type: integer
+    type: object
+  internal_hold.SeatStatusResponse:
+    properties:
+      seat_id:
+        type: string
+      session_id:
+        description: Only if held by current session
+        type: string
+      status:
+        description: '"available", "held", "booked"'
+        type: string
+    type: object
+  internal_movies.CreateMovieRequest:
+    properties:
+      description:
+        type: string
+      duration_minutes:
+        type: integer
+      title:
+        type: string
+    type: object
+  internal_movies.MovieResponse:
+    properties:
+      description:
+        type: string
+      duration_minutes:
+        type: integer
+      id:
+        type: string
+      title:
+        type: string
+    type: object
+  internal_movies.UpdateMovieRequest:
+    properties:
+      description:
+        type: string
+      duration_minutes:
+        type: integer
+      title:
+        type: string
+    type: object
+  internal_seats.CreateHallRequest:
+    properties:
+      name:
+        type: string
+      seat_layout:
+        items:
+          $ref: '#/definitions/internal_seats.SeatLayoutRow'
+        type: array
+    type: object
+  internal_seats.HallResponse:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      seats:
+        items:
+          $ref: '#/definitions/internal_seats.SeatResponse'
+        type: array
+      total_seats:
+        type: integer
+    type: object
+  internal_seats.SeatLayoutRow:
+    properties:
+      row_name:
+        type: string
+      seat_count:
+        type: integer
+    type: object
+  internal_seats.SeatResponse:
+    properties:
+      id:
+        type: string
+      row_name:
+        type: string
+      seat_number:
+        type: integer
+    type: object
+  internal_seats.UpdateHallRequest:
+    properties:
+      name:
+        type: string
+      seat_layout:
+        items:
+          $ref: '#/definitions/internal_seats.SeatLayoutRow'
+        type: array
+    type: object
+  internal_shows.CreateShowRequest:
+    properties:
+      hall_id:
+        type: string
+      movie_id:
+        type: string
+      start_time:
+        description: ISO 8601 format
+        type: string
+    type: object
+  internal_shows.HallInfo:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      total_seats:
+        type: integer
+    type: object
+  internal_shows.MovieInfo:
+    properties:
+      duration_minutes:
+        type: integer
+      id:
+        type: string
+      title:
+        type: string
+    type: object
+  internal_shows.ShowResponse:
+    properties:
+      end_time:
+        type: string
+      hall:
+        $ref: '#/definitions/internal_shows.HallInfo'
+      hall_id:
+        type: string
+      id:
+        type: string
+      movie:
+        $ref: '#/definitions/internal_shows.MovieInfo'
+      movie_id:
+        type: string
+      start_time:
+        type: string
+    type: object
+  internal_shows.ShowSeatStatus:
+    properties:
+      id:
+        type: string
+      row_name:
+        type: string
+      seat_number:
+        type: integer
+      status:
+        description: available, held, booked
+        type: string
+    type: object
+  internal_shows.ShowSeatsResponse:
+    properties:
+      seats:
+        items:
+          $ref: '#/definitions/internal_shows.ShowSeatStatus'
+        type: array
+      show_id:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@example.com
+    name: API Support
+  description: Production-level seat booking system with real-time updates
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Seat Booking API
+  version: "1.0"
+paths:
+  /api/v1/bookings:
+    post:
+      consumes:
+      - application/json
+      description: Create a booking from held seats
+      parameters:
+      - description: Create booking request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_booking.CreateBookingRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_booking.BookingResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Error'
+              type: object
+        "409":
+          description: Conflict
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Error'
+              type: object
+      summary: Create a booking
+      tags:
+      - booking
+  /api/v1/bookings/{id}:
+    get:
+      description: Get booking details by ID
+      parameters:
+      - description: Booking ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_booking.BookingResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Error'
+              type: object
+      summary: Get a booking
+      tags:
+      - booking
+  /api/v1/halls:
+    get:
+      description: Get all halls
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/internal_seats.HallResponse'
+                  type: array
+              type: object
+      summary: Get all halls
+      tags:
+      - halls
+    post:
+      consumes:
+      - application/json
+      description: Create a new hall with seat layout
+      parameters:
+      - description: Create hall request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_seats.CreateHallRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_seats.HallResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Error'
+              type: object
+      summary: Create a hall
+      tags:
+      - halls
+  /api/v1/halls/{id}:
+    delete:
+      description: Delete a hall by ID
+      parameters:
+      - description: Hall ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Error'
+              type: object
+      summary: Delete a hall
+      tags:
+      - halls
+    get:
+      description: Get a hall by ID with its seats
+      parameters:
+      - description: Hall ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_seats.HallResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Error'
+              type: object
+      summary: Get a hall
+      tags:
+      - halls
+    put:
+      consumes:
+      - application/json
+      description: Update hall name and seat layout
+      parameters:
+      - description: Hall ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update hall request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_seats.UpdateHallRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Error'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Error'
+              type: object
+      summary: Update a hall with seats
+      tags:
+      - halls
+  /api/v1/halls/{id}/seats:
+    get:
+      description: Get all seats for a hall
+      parameters:
+      - description: Hall ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/internal_seats.SeatResponse'
+                  type: array
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Error'
+              type: object
+      summary: Get hall seats
+      tags:
+      - halls
+  /api/v1/hold:
+    delete:
+      consumes:
+      - application/json
+      description: Release a seat from the user's session
+      parameters:
+      - description: Release seat request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_hold.HoldSeatRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_hold.HoldStatusResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Error'
+              type: object
+      summary: Release a held seat
+      tags:
+      - hold
+    post:
+      consumes:
+      - application/json
+      description: Hold a seat for the user's session
+      parameters:
+      - description: Hold seat request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_hold.HoldSeatRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_hold.HoldStatusResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Error'
+              type: object
+        "409":
+          description: Conflict
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Error'
+              type: object
+        "429":
+          description: Too Many Requests
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Error'
+              type: object
+      summary: Hold a seat
+      tags:
+      - hold
+  /api/v1/hold/extend:
+    post:
+      consumes:
+      - application/json
+      description: Extend the hold session TTL
+      parameters:
+      - description: Extend session request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_hold.ExtendSessionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_hold.HoldStatusResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Error'
+              type: object
+        "410":
+          description: Gone
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Error'
+              type: object
+      summary: Extend session
+      tags:
+      - hold
+  /api/v1/hold/seats:
+    get:
+      description: Get the status of all seats for a show
+      parameters:
+      - description: Show ID
+        in: query
+        name: show_id
+        required: true
+        type: string
+      - description: Session ID (optional, to identify own holds)
+        in: query
+        name: session_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/internal_hold.SeatStatusResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Error'
+              type: object
+      summary: Get show seats status
+      tags:
+      - hold
+  /api/v1/hold/status:
+    get:
+      description: Get the current hold session status
+      parameters:
+      - description: Session ID
+        in: query
+        name: session_id
+        required: true
+        type: string
+      - description: Show ID
+        in: query
+        name: show_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_hold.HoldStatusResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Error'
+              type: object
+      summary: Get session status
+      tags:
+      - hold
+  /api/v1/movies:
+    get:
+      description: Get all movies with pagination
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Items per page
+        in: query
+        name: per_page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/internal_movies.MovieResponse'
+                  type: array
+              type: object
+      summary: Get all movies
+      tags:
+      - movies
+    post:
+      consumes:
+      - application/json
+      description: Create a new movie
+      parameters:
+      - description: Create movie request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_movies.CreateMovieRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_movies.MovieResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Error'
+              type: object
+      summary: Create a movie
+      tags:
+      - movies
+  /api/v1/movies/{id}:
+    delete:
+      description: Delete a movie by ID
+      parameters:
+      - description: Movie ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Error'
+              type: object
+      summary: Delete a movie
+      tags:
+      - movies
+    get:
+      description: Get a movie by ID
+      parameters:
+      - description: Movie ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_movies.MovieResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Error'
+              type: object
+      summary: Get a movie
+      tags:
+      - movies
+    put:
+      consumes:
+      - application/json
+      description: Update a movie by ID
+      parameters:
+      - description: Movie ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update movie request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_movies.UpdateMovieRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_movies.MovieResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Error'
+              type: object
+      summary: Update a movie
+      tags:
+      - movies
+  /api/v1/shows:
+    get:
+      description: Get all shows with pagination, optionally filtered by date
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Items per page
+        in: query
+        name: per_page
+        type: integer
+      - description: Filter by date (YYYY-MM-DD)
+        in: query
+        name: date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/internal_shows.ShowResponse'
+                  type: array
+              type: object
+      summary: Get all shows
+      tags:
+      - shows
+    post:
+      consumes:
+      - application/json
+      description: Create a new movie show/screening
+      parameters:
+      - description: Create show request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_shows.CreateShowRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_shows.ShowResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Error'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Error'
+              type: object
+      summary: Create a show
+      tags:
+      - shows
+  /api/v1/shows/{id}:
+    delete:
+      description: Delete a show by ID
+      parameters:
+      - description: Show ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Error'
+              type: object
+      summary: Delete a show
+      tags:
+      - shows
+    get:
+      description: Get a show by ID with movie and hall details
+      parameters:
+      - description: Show ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_shows.ShowResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Error'
+              type: object
+      summary: Get a show
+      tags:
+      - shows
+  /api/v1/shows/{id}/seats:
+    get:
+      description: Get seat availability for a show (includes held and booked status)
+      parameters:
+      - description: Show ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Session ID to identify own holds
+        in: query
+        name: session_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/internal_shows.ShowSeatsResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Response'
+            - properties:
+                error:
+                  $ref: '#/definitions/github_com_shenith404_seat-booking_internal_common.Error'
+              type: object
+      summary: Get show seats
+      tags:
+      - shows
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: X-Session-ID
+    type: apiKey
+swagger: "2.0"

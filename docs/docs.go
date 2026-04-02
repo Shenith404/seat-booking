@@ -23,23 +23,849 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/health": {
+        "/api/v1/bookings": {
+            "post": {
+                "description": "Create a booking from held seats",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "booking"
+                ],
+                "summary": "Create a booking",
+                "parameters": [
+                    {
+                        "description": "Create booking request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_booking.CreateBookingRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_booking.BookingResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Error"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Error"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/bookings/{id}": {
             "get": {
-                "description": "Check if the API is running",
-                "produces": ["application/json"],
-                "tags": ["Health"],
-                "summary": "Health check endpoint",
+                "description": "Get booking details by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "booking"
+                ],
+                "summary": "Get a booking",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Booking ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "properties": {
-                                "status": {
-                                    "type": "string",
-                                    "example": "healthy"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_booking.BookingResponse"
+                                        }
+                                    }
                                 }
-                            }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Error"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/halls": {
+            "get": {
+                "description": "Get all halls",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "halls"
+                ],
+                "summary": "Get all halls",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/internal_seats.HallResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new hall with seat layout",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "halls"
+                ],
+                "summary": "Create a hall",
+                "parameters": [
+                    {
+                        "description": "Create hall request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_seats.CreateHallRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_seats.HallResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Error"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/halls/{id}": {
+            "get": {
+                "description": "Get a hall by ID with its seats",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "halls"
+                ],
+                "summary": "Get a hall",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Hall ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_seats.HallResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Error"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update hall name and seat layout",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "halls"
+                ],
+                "summary": "Update a hall with seats",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Hall ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update hall request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_seats.UpdateHallRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Error"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Error"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a hall by ID",
+                "tags": [
+                    "halls"
+                ],
+                "summary": "Delete a hall",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Hall ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Error"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/halls/{id}/seats": {
+            "get": {
+                "description": "Get all seats for a hall",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "halls"
+                ],
+                "summary": "Get hall seats",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Hall ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/internal_seats.SeatResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Error"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/hold": {
+            "post": {
+                "description": "Hold a seat for the user's session",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "hold"
+                ],
+                "summary": "Hold a seat",
+                "parameters": [
+                    {
+                        "description": "Hold seat request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_hold.HoldSeatRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_hold.HoldStatusResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Error"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Error"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "429": {
+                        "description": "Too Many Requests",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Error"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Release a seat from the user's session",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "hold"
+                ],
+                "summary": "Release a held seat",
+                "parameters": [
+                    {
+                        "description": "Release seat request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_hold.HoldSeatRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_hold.HoldStatusResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Error"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/hold/extend": {
+            "post": {
+                "description": "Extend the hold session TTL",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "hold"
+                ],
+                "summary": "Extend session",
+                "parameters": [
+                    {
+                        "description": "Extend session request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_hold.ExtendSessionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_hold.HoldStatusResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Error"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "410": {
+                        "description": "Gone",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Error"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/hold/seats": {
+            "get": {
+                "description": "Get the status of all seats for a show",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "hold"
+                ],
+                "summary": "Get show seats status",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Show ID",
+                        "name": "show_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Session ID (optional, to identify own holds)",
+                        "name": "session_id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/internal_hold.SeatStatusResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Error"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/hold/status": {
+            "get": {
+                "description": "Get the current hold session status",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "hold"
+                ],
+                "summary": "Get session status",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Session ID",
+                        "name": "session_id",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Show ID",
+                        "name": "show_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_hold.HoldStatusResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Error"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -47,53 +873,1015 @@ const docTemplate = `{
         },
         "/api/v1/movies": {
             "get": {
-                "description": "Get all movies",
-                "produces": ["application/json"],
-                "tags": ["Movies"],
-                "summary": "List all movies",
+                "description": "Get all movies with pagination",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "movies"
+                ],
+                "summary": "Get all movies",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "Items per page",
+                        "name": "per_page",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/internal_movies.MovieResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new movie",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "movies"
+                ],
+                "summary": "Create a movie",
+                "parameters": [
+                    {
+                        "description": "Create movie request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_movies.CreateMovieRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_movies.MovieResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Error"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/movies/{id}": {
+            "get": {
+                "description": "Get a movie by ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "movies"
+                ],
+                "summary": "Get a movie",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Movie ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_movies.MovieResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Error"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update a movie by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "movies"
+                ],
+                "summary": "Update a movie",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Movie ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update movie request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_movies.UpdateMovieRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_movies.MovieResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Error"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a movie by ID",
+                "tags": [
+                    "movies"
+                ],
+                "summary": "Delete a movie",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Movie ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Error"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
                     }
                 }
             }
         },
         "/api/v1/shows": {
             "get": {
-                "description": "Get all shows",
-                "produces": ["application/json"],
-                "tags": ["Shows"],
-                "summary": "List all shows",
+                "description": "Get all shows with pagination, optionally filtered by date",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "shows"
+                ],
+                "summary": "Get all shows",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "Items per page",
+                        "name": "per_page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by date (YYYY-MM-DD)",
+                        "name": "date",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/internal_shows.ShowResponse"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
                     }
                 }
-            }
-        },
-        "/api/v1/hold": {
+            },
             "post": {
-                "description": "Hold a seat for booking",
-                "produces": ["application/json"],
-                "tags": ["Hold"],
-                "summary": "Hold a seat",
-                "responses": {
-                    "200": {
-                        "description": "OK"
+                "description": "Create a new movie show/screening",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "shows"
+                ],
+                "summary": "Create a show",
+                "parameters": [
+                    {
+                        "description": "Create show request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_shows.CreateShowRequest"
+                        }
                     }
-                }
-            }
-        },
-        "/api/v1/bookings": {
-            "post": {
-                "description": "Create a new booking",
-                "produces": ["application/json"],
-                "tags": ["Bookings"],
-                "summary": "Create booking",
+                ],
                 "responses": {
                     "201": {
-                        "description": "Created"
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_shows.ShowResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Error"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Error"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
                     }
+                }
+            }
+        },
+        "/api/v1/shows/{id}": {
+            "get": {
+                "description": "Get a show by ID with movie and hall details",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "shows"
+                ],
+                "summary": "Get a show",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Show ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_shows.ShowResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Error"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a show by ID",
+                "tags": [
+                    "shows"
+                ],
+                "summary": "Delete a show",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Show ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Error"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/shows/{id}/seats": {
+            "get": {
+                "description": "Get seat availability for a show (includes held and booked status)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "shows"
+                ],
+                "summary": "Get show seats",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Show ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Session ID to identify own holds",
+                        "name": "session_id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/internal_shows.ShowSeatsResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "error": {
+                                            "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Error"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "github_com_shenith404_seat-booking_internal_common.Error": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.ErrorCode"
+                },
+                "details": {},
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_shenith404_seat-booking_internal_common.ErrorCode": {
+            "type": "string",
+            "enum": [
+                "INTERNAL_ERROR",
+                "BAD_REQUEST",
+                "NOT_FOUND",
+                "UNAUTHORIZED",
+                "FORBIDDEN",
+                "CONFLICT",
+                "VALIDATION_ERROR",
+                "HOLD_SESSION_EXPIRED",
+                "HOLD_SESSION_MAX_TIME_EXCEEDED",
+                "HOLD_TOGGLE_LIMIT_EXCEEDED",
+                "HOLD_SEAT_UNAVAILABLE",
+                "HOLD_SEAT_NOT_HELD",
+                "BOOKING_SEATS_NOT_HELD",
+                "BOOKING_SEATS_ALREADY_BOOKED",
+                "BOOKING_FAILED",
+                "RATE_LIMIT_EXCEEDED"
+            ],
+            "x-enum-varnames": [
+                "ErrCodeInternal",
+                "ErrCodeBadRequest",
+                "ErrCodeNotFound",
+                "ErrCodeUnauthorized",
+                "ErrCodeForbidden",
+                "ErrCodeConflict",
+                "ErrCodeValidation",
+                "ErrCodeHoldSessionExpired",
+                "ErrCodeHoldSessionMaxTime",
+                "ErrCodeHoldToggleLimitHit",
+                "ErrCodeHoldSeatUnavailable",
+                "ErrCodeHoldSeatNotHeld",
+                "ErrCodeBookingSeatsNotHeld",
+                "ErrCodeBookingSeatsTaken",
+                "ErrCodeBookingFailed",
+                "ErrCodeRateLimitExceeded"
+            ]
+        },
+        "github_com_shenith404_seat-booking_internal_common.Meta": {
+            "type": "object",
+            "properties": {
+                "page": {
+                    "type": "integer"
+                },
+                "per_page": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                },
+                "total_pages": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_shenith404_seat-booking_internal_common.Response": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "error": {
+                    "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Error"
+                },
+                "meta": {
+                    "$ref": "#/definitions/github_com_shenith404_seat-booking_internal_common.Meta"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "internal_booking.BookingResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "customer_email": {
+                    "type": "string"
+                },
+                "customer_phone": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "show_id": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "tickets": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_booking.TicketResponse"
+                    }
+                }
+            }
+        },
+        "internal_booking.CreateBookingRequest": {
+            "type": "object",
+            "properties": {
+                "customer_email": {
+                    "type": "string"
+                },
+                "customer_phone": {
+                    "type": "string"
+                },
+                "session_id": {
+                    "type": "string"
+                },
+                "show_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_booking.TicketResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "seat_id": {
+                    "type": "string"
+                },
+                "seat_info": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_hold.ExtendSessionRequest": {
+            "type": "object",
+            "properties": {
+                "session_id": {
+                    "type": "string"
+                },
+                "show_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_hold.HoldSeatRequest": {
+            "type": "object",
+            "properties": {
+                "seat_id": {
+                    "type": "string"
+                },
+                "session_id": {
+                    "type": "string"
+                },
+                "show_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_hold.HoldStatusResponse": {
+            "type": "object",
+            "properties": {
+                "can_extend": {
+                    "type": "boolean"
+                },
+                "held_seats": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "max_time_seconds": {
+                    "type": "integer"
+                },
+                "remaining_time_seconds": {
+                    "type": "integer"
+                },
+                "session_id": {
+                    "type": "string"
+                },
+                "show_id": {
+                    "type": "string"
+                },
+                "toggle_count": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_hold.SeatStatusResponse": {
+            "type": "object",
+            "properties": {
+                "seat_id": {
+                    "type": "string"
+                },
+                "session_id": {
+                    "description": "Only if held by current session",
+                    "type": "string"
+                },
+                "status": {
+                    "description": "\"available\", \"held\", \"booked\"",
+                    "type": "string"
+                }
+            }
+        },
+        "internal_movies.CreateMovieRequest": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "duration_minutes": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_movies.MovieResponse": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "duration_minutes": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_movies.UpdateMovieRequest": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "duration_minutes": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_seats.CreateHallRequest": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "seat_layout": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_seats.SeatLayoutRow"
+                    }
+                }
+            }
+        },
+        "internal_seats.HallResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "seats": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_seats.SeatResponse"
+                    }
+                },
+                "total_seats": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_seats.SeatLayoutRow": {
+            "type": "object",
+            "properties": {
+                "row_name": {
+                    "type": "string"
+                },
+                "seat_count": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_seats.SeatResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "row_name": {
+                    "type": "string"
+                },
+                "seat_number": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_seats.UpdateHallRequest": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "seat_layout": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_seats.SeatLayoutRow"
+                    }
+                }
+            }
+        },
+        "internal_shows.CreateShowRequest": {
+            "type": "object",
+            "properties": {
+                "hall_id": {
+                    "type": "string"
+                },
+                "movie_id": {
+                    "type": "string"
+                },
+                "start_time": {
+                    "description": "ISO 8601 format",
+                    "type": "string"
+                }
+            }
+        },
+        "internal_shows.HallInfo": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "total_seats": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_shows.MovieInfo": {
+            "type": "object",
+            "properties": {
+                "duration_minutes": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_shows.ShowResponse": {
+            "type": "object",
+            "properties": {
+                "end_time": {
+                    "type": "string"
+                },
+                "hall": {
+                    "$ref": "#/definitions/internal_shows.HallInfo"
+                },
+                "hall_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "movie": {
+                    "$ref": "#/definitions/internal_shows.MovieInfo"
+                },
+                "movie_id": {
+                    "type": "string"
+                },
+                "start_time": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_shows.ShowSeatStatus": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "row_name": {
+                    "type": "string"
+                },
+                "seat_number": {
+                    "type": "integer"
+                },
+                "status": {
+                    "description": "available, held, booked",
+                    "type": "string"
+                }
+            }
+        },
+        "internal_shows.ShowSeatsResponse": {
+            "type": "object",
+            "properties": {
+                "seats": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_shows.ShowSeatStatus"
+                    }
+                },
+                "show_id": {
+                    "type": "string"
                 }
             }
         }
@@ -111,6 +1899,7 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
 	Host:             "localhost:8080",
+	BasePath:         "/api/v1",
 	Schemes:          []string{},
 	Title:            "Seat Booking API",
 	Description:      "Production-level seat booking system with real-time updates",

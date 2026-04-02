@@ -30,7 +30,7 @@ sqlc:
 
 # Generate Swagger documentation
 swagger:
-	swag init -g cmd/api/main.go -o docs
+	swag init -g cmd/api/main.go -o docs --parseDependency --parseInternal
 
 # Install swag CLI
 install-swag:

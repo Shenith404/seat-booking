@@ -114,6 +114,8 @@ func (r *RedisRepository) HoldSeat(ctx context.Context, showID, seatID, sessionI
 	if success == "OK" {
 		// Add to show's held seats set
 		r.client.SAdd(ctx, showSeatsKey(showID), seatID)
+		r.client.Expire(ctx, showSeatsKey(showID), ttl*10) // 10x seat hold time
+
 		return true, nil
 	}
 

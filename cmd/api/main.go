@@ -11,6 +11,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	chimw "github.com/go-chi/chi/v5/middleware"
+	"github.com/hibiken/asynq"
 	"github.com/joho/godotenv"
 	httpSwagger "github.com/swaggo/http-swagger"
 
@@ -20,6 +21,7 @@ import (
 	"github.com/shenith404/seat-booking/internal/booking"
 	"github.com/shenith404/seat-booking/internal/cache"
 	"github.com/shenith404/seat-booking/internal/config"
+	"github.com/shenith404/seat-booking/internal/email"
 	"github.com/shenith404/seat-booking/internal/hold"
 	"github.com/shenith404/seat-booking/internal/middleware"
 	"github.com/shenith404/seat-booking/internal/movies"
@@ -81,9 +83,16 @@ func main() {
 	// Initialize WebSocket Hub
 	wsHub := websocket.NewHub(ps)
 	go wsHub.Run(ctx)
+	// Create the Client (used by your API to push tasks)
+	redisOpt := asynq.RedisClientOpt{Addr: cfg.Redis.Host}
+	asynqClient := asynq.NewClient(redisOpt)
+	defer asynqClient.Close()
+	// Initialize Email Worker
+	emailWorker := email.NewMailTrapEmailWorker(cfg.MailTrapConfig)
+	emailSrvc := email.NewService(asynqClient, emailWorker)
 
 	// Initialize Background Worker
-	bgWorker := worker.NewWorker(3, 100)
+	bgWorker := worker.NewWorker(3, 100, emailSrvc)
 	bgWorker.Start(ctx)
 	defer bgWorker.Stop()
 

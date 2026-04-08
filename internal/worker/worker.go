@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/shenith404/seat-booking/internal/email"
 )
 
 // BookingJob represents a job to process after booking
@@ -37,17 +38,19 @@ type EmailResult struct {
 
 // Worker processes background jobs
 type Worker struct {
-	jobQueue    chan BookingJob
-	workerCount int
-	wg          sync.WaitGroup
-	qrCallback  func(ctx context.Context, ticketID uuid.UUID, qrHash string) error
+	jobQueue     chan BookingJob
+	workerCount  int
+	wg           sync.WaitGroup
+	qrCallback   func(ctx context.Context, ticketID uuid.UUID, qrHash string) error
+	emailService email.EmailService
 }
 
 // NewWorker creates a new background worker
-func NewWorker(workerCount int, queueSize int) *Worker {
+func NewWorker(workerCount int, queueSize int, emailService email.EmailService) *Worker {
 	return &Worker{
-		jobQueue:    make(chan BookingJob, queueSize),
-		workerCount: workerCount,
+		jobQueue:     make(chan BookingJob, queueSize),
+		workerCount:  workerCount,
+		emailService: emailService,
 	}
 }
 
@@ -120,7 +123,7 @@ func (w *Worker) processJob(ctx context.Context, job BookingJob) {
 	}
 
 	// Send confirmation email (simulated)
-	if err := sendConfirmationEmail(job); err != nil {
+	if err := w.sendConfirmationEmail(job); err != nil {
 		log.Printf("Failed to send email for booking %s: %v", job.BookingID, err)
 	} else {
 		log.Printf("Confirmation email sent for booking %s to %s", job.BookingID, job.CustomerEmail)
@@ -135,7 +138,7 @@ func generateQRHash(bookingID, ticketID uuid.UUID) string {
 }
 
 // sendConfirmationEmail simulates sending a confirmation email
-func sendConfirmationEmail(job BookingJob) error {
+func (w *Worker) sendConfirmationEmail(job BookingJob) error {
 	// In production, integrate with an email service (SendGrid, SES, etc.)
 	log.Printf("SIMULATED EMAIL SEND:\n"+
 		"To: %s\n"+
@@ -145,6 +148,12 @@ func sendConfirmationEmail(job BookingJob) error {
 		job.BookingID.String()[:8],
 		len(job.SeatIDs),
 	)
+	w.emailService.SendBookingEmail(email.BookingPayload{
+		UserName:   "Customer", // In real implementation, fetch customer name from DB
+		UserEmail:  job.CustomerEmail,
+		BookingId:  job.BookingID.URN(),
+		TotalSeats: len(job.SeatIDs),
+	})
 
 	// Simulate network delay
 	time.Sleep(100 * time.Millisecond)

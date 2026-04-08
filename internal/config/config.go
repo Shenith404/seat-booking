@@ -13,6 +13,7 @@ type Config struct {
 	Redis     RedisConfig
 	Hold      HoldConfig
 	RateLimit RateLimitConfig
+	MailTrapConfig MailTrapConfig
 }
 
 // ServerConfig holds HTTP server configuration
@@ -59,6 +60,13 @@ type RateLimitConfig struct {
 	BucketTTL             time.Duration
 }
 
+type MailTrapConfig struct {
+	MailtrapHost string
+	MailtrapPort int
+	MailtrapUser string
+	MailtrapPass string
+}
+
 // Load loads configuration from environment variables
 func Load() *Config {
 	return &Config{
@@ -95,6 +103,13 @@ func Load() *Config {
 		RateLimit: RateLimitConfig{
 			HoldRequestsPerMinute: getEnvAsInt("RATE_LIMIT_HOLD_PER_MINUTE", 20),
 			BucketTTL:             getEnvAsDuration("RATE_LIMIT_BUCKET_TTL", 1*time.Minute),
+		},
+
+		MailTrapConfig : MailTrapConfig{
+			MailtrapHost: getEnv( "MailtrapHost", "smtp.mailtrap.io"),
+			MailtrapPort: getEnvAsInt( "MailtrapPort", 25),
+			MailtrapUser: getEnv( "MailtrapUser", ""),
+			MailtrapPass: getEnv( "MailtrapPass", ""),
 		},
 	}
 }

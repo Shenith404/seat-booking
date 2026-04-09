@@ -83,13 +83,32 @@ func main() {
 	// Initialize WebSocket Hub
 	wsHub := websocket.NewHub(ps)
 	go wsHub.Run(ctx)
-	// Create the Client (used by your API to push tasks)
-	redisOpt := asynq.RedisClientOpt{Addr: cfg.Redis.Host}
-	asynqClient := asynq.NewClient(redisOpt)
+	// Create the asynq Client (used by your API to push tasks)
+	redisAddr := fmt.Sprintf("%s:%d", cfg.Redis.Host, cfg.Redis.Port)
+	asynqClient := asynq.NewClient(asynq.RedisClientOpt{Addr: redisAddr})
 	defer asynqClient.Close()
-	// Initialize Email Worker
+
+	// Initialize Email Worker and Service
 	emailWorker := email.NewMailTrapEmailWorker(cfg.MailTrapConfig)
-	emailSrvc := email.NewService(asynqClient, emailWorker)
+	emailSrvc := email.NewService(asynqClient)
+
+	// Start asynq server to process email tasks
+	asynqServer := asynq.NewServer(
+		asynq.RedisClientOpt{Addr: redisAddr},
+		asynq.Config{
+			Concurrency: 5,
+			Queues:      map[string]int{"default": 10},
+		},
+	)
+	asynqMux := asynq.NewServeMux()
+	asynqMux.HandleFunc(email.TypeEmailBooking, emailWorker.SendEmail)
+
+	go func() {
+		if err := asynqServer.Run(asynqMux); err != nil {
+			log.Printf("Asynq server error: %v", err)
+		}
+	}()
+	defer asynqServer.Shutdown()
 
 	// Initialize Background Worker
 	bgWorker := worker.NewWorker(3, 100, emailSrvc)

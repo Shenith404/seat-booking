@@ -13,15 +13,13 @@ type EmailService interface {
 
 type EmailServiceImpl struct {
 	client *asynq.Client
-	worker EmailSendWorker
 }
 
 const TypeEmailBooking = "email:BookingConfirmation"
 
-func NewService(client *asynq.Client, worker EmailSendWorker) *EmailServiceImpl {
+func NewService(client *asynq.Client) *EmailServiceImpl {
 	return &EmailServiceImpl{
 		client: client,
-		worker: worker,
 	}
 }
 

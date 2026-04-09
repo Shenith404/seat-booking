@@ -61,10 +61,12 @@ type RateLimitConfig struct {
 }
 
 type MailTrapConfig struct {
-	MailtrapHost string
-	MailtrapPort int
-	MailtrapUser string
-	MailtrapPass string
+	Host       string
+	Port       int
+	User       string
+	Pass       string
+	SenderName string
+	SenderAddr string
 }
 
 // Load loads configuration from environment variables
@@ -105,11 +107,13 @@ func Load() *Config {
 			BucketTTL:             getEnvAsDuration("RATE_LIMIT_BUCKET_TTL", 1*time.Minute),
 		},
 
-		MailTrapConfig : MailTrapConfig{
-			MailtrapHost: getEnv( "MailtrapHost", "smtp.mailtrap.io"),
-			MailtrapPort: getEnvAsInt( "MailtrapPort", 25),
-			MailtrapUser: getEnv( "MailtrapUser", ""),
-			MailtrapPass: getEnv( "MailtrapPass", ""),
+		MailTrapConfig: MailTrapConfig{
+			Host:       getEnv("MAILTRAP_HOST", "smtp.mailtrap.io"),
+			Port:       getEnvAsInt("MAILTRAP_PORT", 587),
+			User:       getEnv("MAILTRAP_USER", ""),
+			Pass:       getEnv("MAILTRAP_PASS", ""),
+			SenderName: getEnv("MAILTRAP_SENDER_NAME", "Sarislabs Seat Booking"),
+			SenderAddr: getEnv("MAILTRAP_SENDER_ADDR", "noreply@sarislabs.com"),
 		},
 	}
 }

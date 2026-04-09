@@ -9,24 +9,26 @@ import (
 	"github.com/hibiken/asynq"
 	"gopkg.in/gomail.v2"
 
-	// We import email just to use the Type constants and Structs
 	"github.com/shenith404/seat-booking/internal/config"
 )
 
 type MailTrapEmailWorker struct {
-	MailtrapHost string
-	MailtrapPort int
-	MailtrapUser string
-	MailtrapPass string
+	host       string
+	port       int
+	user       string
+	pass       string
+	senderName string
+	senderAddr string
 }
 
 func NewMailTrapEmailWorker(cfg config.MailTrapConfig) *MailTrapEmailWorker {
 	return &MailTrapEmailWorker{
-
-		MailtrapHost: cfg.MailtrapHost,
-		MailtrapPort: cfg.MailtrapPort,
-		MailtrapUser: cfg.MailtrapUser,
-		MailtrapPass: cfg.MailtrapPass,
+		host:       cfg.Host,
+		port:       cfg.Port,
+		user:       cfg.User,
+		pass:       cfg.Pass,
+		senderName: cfg.SenderName,
+		senderAddr: cfg.SenderAddr,
 	}
 }
 
@@ -54,15 +56,11 @@ func (w *MailTrapEmailWorker) SendEmail(ctx context.Context, t *asynq.Task) erro
 func (w *MailTrapEmailWorker) sendEmailViaMailtrap(payload BookingPayload) error {
 	m := gomail.NewMessage()
 
-	// Using your company name for the sender
-	m.SetHeader("From", "noreply@sarislabs.com")
+	m.SetHeader("From", m.FormatAddress(w.senderAddr, w.senderName))
 	m.SetHeader("To", payload.UserEmail)
 	m.SetHeader("Subject", payload.Subject)
+	m.SetBody("text/html", payload.HtmlBody)
 
-	// HTML Body
-	htmlBody := payload.HtmlBody
-	m.SetBody("text/html", htmlBody)
-
-	d := gomail.NewDialer(w.MailtrapHost, w.MailtrapPort, w.MailtrapUser, w.MailtrapPass)
+	d := gomail.NewDialer(w.host, w.port, w.user, w.pass)
 	return d.DialAndSend(m)
 }

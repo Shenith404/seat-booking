@@ -137,26 +137,16 @@ func generateQRHash(bookingID, ticketID uuid.UUID) string {
 	return hex.EncodeToString(hash[:])
 }
 
-// sendConfirmationEmail simulates sending a confirmation email
+// sendConfirmationEmail sends a confirmation email via the email service
 func (w *Worker) sendConfirmationEmail(job BookingJob) error {
-	// In production, integrate with an email service (SendGrid, SES, etc.)
-	log.Printf("SIMULATED EMAIL SEND:\n"+
-		"To: %s\n"+
-		"Subject: Booking Confirmation #%s\n"+
-		"Body: Your booking has been confirmed. %d seat(s) reserved.\n",
-		job.CustomerEmail,
-		job.BookingID.String()[:8],
-		len(job.SeatIDs),
-	)
-	w.emailService.SendBookingEmail(email.BookingPayload{
+	err := w.emailService.SendBookingEmail(email.BookingPayload{
 		UserName:   "Customer", // In real implementation, fetch customer name from DB
 		UserEmail:  job.CustomerEmail,
-		BookingId:  job.BookingID.URN(),
+		BookingId:  job.BookingID.String(),
 		TotalSeats: len(job.SeatIDs),
 	})
-
-	// Simulate network delay
-	time.Sleep(100 * time.Millisecond)
-
+	if err != nil {
+		return fmt.Errorf("failed to enqueue email: %w", err)
+	}
 	return nil
 }

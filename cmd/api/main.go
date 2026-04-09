@@ -85,7 +85,10 @@ func main() {
 	go wsHub.Run(ctx)
 	// Create the asynq Client (used by your API to push tasks)
 	redisAddr := fmt.Sprintf("%s:%d", cfg.Redis.Host, cfg.Redis.Port)
-	asynqClient := asynq.NewClient(asynq.RedisClientOpt{Addr: redisAddr})
+	asynqClient := asynq.NewClient(asynq.RedisClientOpt{
+		Addr:     redisAddr,
+		Password: cfg.Redis.Password,
+	})
 	defer asynqClient.Close()
 
 	// Initialize Email Worker and Service
@@ -94,7 +97,10 @@ func main() {
 
 	// Start asynq server to process email tasks
 	asynqServer := asynq.NewServer(
-		asynq.RedisClientOpt{Addr: redisAddr},
+		asynq.RedisClientOpt{
+			Addr:     redisAddr,
+			Password: cfg.Redis.Password,
+		},
 		asynq.Config{
 			Concurrency: 5,
 			Queues:      map[string]int{"default": 10},
